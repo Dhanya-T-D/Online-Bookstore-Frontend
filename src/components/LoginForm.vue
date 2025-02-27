@@ -79,6 +79,7 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
   export default {
     data: () => ({
       visible: false,
@@ -94,7 +95,15 @@
         try{
           const res = await this.$store.dispatch('login',payload)
           if(res) {
-            alert("successfully login!!!!")
+            if(this.Role === 'publisher'){
+              this.$router.push('/publisherhome');
+            }else if(this.Role === 'admin'){
+              // this.$router.push('/adminhOME')
+              alert('admin logined');
+            }else{
+              alert('user logined......');
+            }
+
           }else{
             console.log('error');
             
@@ -104,6 +113,12 @@
           alert("Invalid login details")
           console.error(error);
         }
+      }
+    },
+    computed : {
+      ...mapGetters(['getRole']),
+      Role(){
+        return this.getRole;
       }
     }
   }

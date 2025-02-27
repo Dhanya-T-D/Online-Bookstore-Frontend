@@ -14,8 +14,12 @@ const router = createRouter({
         {
             path:'/',
             component: () => import('./components/HomePage.vue') 
-        }
-
+        },
+        {
+            path:'/publisherhome',
+            component: () => import('./components/PublisherHomepage.vue')
+        },
+  
     ]
 })
 
