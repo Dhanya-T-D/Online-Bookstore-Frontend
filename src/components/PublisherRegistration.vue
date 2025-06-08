@@ -4,7 +4,7 @@
     <v-card class="pa-5">
       <v-card-title class="text-h5">Publisher Registration</v-card-title>
       <v-card-text>
-        <v-form ref="form">
+        <v-form ref="form" v-model="isFormValid">
           <v-row>
             <v-col cols="12" md="6">
               <v-text-field label="Publisher Name" v-model="name"  class="custom-label" :rules="[rules.required]"/>
@@ -36,15 +36,24 @@
             <v-col cols="12" md="6">
               <v-text-field label="Country" v-model="country" :rules="[rules.required]"/>
             </v-col>
+
+            <!-- --- text field for password with eye  -->
             <v-col cols="12" md="6">
-              <v-text-field label="Password" type="password" v-model="password" :rules="[rules.required, rules.password]" />
+              <v-text-field label="Password" :type="visible ? 'text' : 'password'" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'" 
+              v-model="password"
+              @click:append-inner="visible = !visible"
+               :rules="[rules.required, rules.password]" />
             </v-col>
+
+
             <v-col cols="12" md="6">
-              <v-text-field label="Confirm Password" type="password" v-model="confirmPassword" :rules="[rules.required, rules.confirmPassword]" />
+              <v-text-field label="Confirm Password" :type="visible ? 'text' : 'password'" v-model="confirmPassword" :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
+              @click:append-inner="visible = !visible"
+              :rules="[rules.required, rules.confirmPassword]" />
             </v-col>
-            <!-- <v-col cols="12" md="6">
+             <v-col cols="12" md="6">
               <v-file-input label="License Image" v-model="licenseImage" accept="image/*" :rules="[rules.required]" />
-            </v-col> -->
+            </v-col> 
 
 
           </v-row>
@@ -84,7 +93,8 @@
       password:'',
       confirmPassword:'',
       licenseNumber:'',
-      // licenseImage:'',
+      visible:false,
+      sFormValid: false,
       
       rules : {
   required: (value) => !!value || "Required",
@@ -97,7 +107,7 @@
   password: (value) =>
     (value && value.length >= 6) || "Password must be at least 6 characters",
   confirmPassword: (value) =>
-    value ===value.password || "Passwords must match",
+    value !== value.password || "Passwords must match",
 },
 showDialog: false,
 
@@ -106,6 +116,11 @@ showDialog: false,
     methods:{
      
 async onSubmit() {
+  const isValid = await this.$refs.form.validate()
+      
+      if (!isValid) {
+        return
+      }
   const payload = {
     "pub_name":this.name,
     "phone":this.phone,
@@ -119,12 +134,26 @@ async onSubmit() {
             "country":this.country
     },
     "password":this.password,
-    "license_no":this.licenseNumber
+    "license_no":this.licenseNumber,
+    
   }
   try{
           const res = await this.$store.dispatch('publisher/pubReg',payload)
           if(res) {
-            alert("successfully login!!!!")
+            alert("Registration Successful!!!!");
+            
+            this.name = '',
+            this.phone = '',
+            this.email = '',
+               this.addressLine = '',
+               this.street = '', 
+               this.pincode = '',
+               this.district = '',
+                this.state = '',
+               this.country = '',
+        this.password = '',
+        this.licenseNumber = ''
+
           }else{
             console.log('error');
             

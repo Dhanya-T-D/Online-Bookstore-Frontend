@@ -64,14 +64,8 @@
       </v-btn>
 
       <v-card-text class="text-center">
-        <!-- <a
-          class="text-blue text-decoration-none"
-          href="#"
-          rel="noopener noreferrer"
-          target="_blank"
-        > -->
+
         <router-link to="/reg"> Sign up now <v-icon icon="mdi-chevron-right"></v-icon></router-link>
-        <!-- </a> -->
       </v-card-text>
     </v-card>
   </div>
@@ -96,15 +90,19 @@ import { mapGetters } from 'vuex';
           const res = await this.$store.dispatch('login',payload)
           if(res) {
             if(this.Role === 'publisher'){
-              this.$router.push('/publisherhome');
-            }else if(this.Role === 'admin'){
-              // this.$router.push('/adminhOME')
-              alert('admin logined');
-            }else{
-              alert('user logined......');
+              // this.$router.push('/publisherhome');
+              this.$router.push({name:'publisher-home'})
+
+            }else if(this.Role === 'user'){
+              this.$router.push('/userhomepage')
+              // alert('admin logined');
+            }
+            else{
+              this.$router.push('/adminhomepage')
             }
 
           }else{
+            alert('Something went wrong');
             console.log('error');
             
             

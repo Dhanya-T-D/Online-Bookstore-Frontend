@@ -8,6 +8,8 @@ export default {
         return {
             bookList: JSON.parse(sessionStorage.getItem('bookList')) || [],
             category: JSON.parse(sessionStorage.getItem('category')) || [],
+            language: JSON.parse(sessionStorage.getItem('language')) || []
+           
         };
     },
 

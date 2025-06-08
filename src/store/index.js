@@ -15,7 +15,8 @@ const store = createStore({
     state() {
         return {
             base_url: 'http://localhost:8448',
-            role: JSON.parse(sessionStorage.getItem('role')) || '',
+            // role: JSON.parse(sessionStorage.getItem('role')) || '',
+            role: sessionStorage.getItem('role') || '',
             loginDetails: JSON.parse(sessionStorage.getItem('loginDetails')) || [],
         };
     },
