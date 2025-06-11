@@ -4,10 +4,26 @@
       <v-card-title class="text-h6">Buy Now</v-card-title>
 
       <v-card-text>
-        <v-form ref="form">
-          <v-text-field label="Name" v-model="user.name" required />
-          <v-text-field label="Phone Number" v-model="user.phone" type="tel" required />
-          <v-textarea label="Shipping Address" v-model="user.address" required />
+        <v-form ref="form" v-model="isFormValid">
+          <v-text-field
+            label="Name"
+            v-model="userData.name"
+            :rules="[rules.required]"
+            required
+          />
+          <v-text-field
+            label="Phone Number"
+            v-model="userData.phone"
+            type="tel"
+            :rules="[rules.required, rules.phone]"
+            required
+          />
+          <v-textarea
+            label="Shipping Address"
+            v-model="userData.address"
+            :rules="[rules.required]"
+            required
+          />
 
           <v-text-field
             label="Quantity"
@@ -15,18 +31,19 @@
             type="number"
             min="1"
             @input="updateTotalPrice"
+            :rules="[rules.required]"
             required
           />
 
           <v-divider class="my-4" />
 
-          <div><strong>Book Name:</strong> {{ orderDetails.bookName }}</div>
-          <div><strong>Book Price (each):</strong> ₹{{ orderDetails.bookPrice }}</div>
+          <div><strong>Book Name:</strong> {{ book.bookName }}</div>
+          <div><strong>Book Price (each):</strong> ₹{{ book.bookPrice || book.price || 0 }}</div>
           <div><strong>Selected Quantity:</strong> {{ quantity }}</div>
-          <div><strong>Shipping Charge:</strong> ₹{{ orderDetails.shippingCharge }}</div>
+          <div><strong>Shipping Charge:</strong> ₹{{ shippingCharge }}</div>
           <div><strong>Total Price:</strong> ₹{{ totalPrice }}</div>
-          <div><strong>Expected Delivery:</strong> {{ orderDetails.expectedDeliveryDate }}</div>
-          <div><strong>Payment Mode:</strong> {{ orderDetails.paymentMode }}</div>
+          <div><strong>Expected Delivery:</strong> {{ expectedDeliveryDate }}</div>
+          <div><strong>Payment Mode:</strong> Cash On Delivery</div>
 
           <v-divider class="my-4" />
 
@@ -38,6 +55,8 @@
           <v-checkbox
             v-model="acceptTerms"
             label="I accept the terms and conditions"
+            :rules="[rules.required]"
+            required
           />
         </v-form>
       </v-card-text>
@@ -59,105 +78,102 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex';
 export default {
   name: 'BuyNowDialog',
+
   props: {
     modelValue: Boolean,
-    bookId: Number,
+    book: {
+      type: Object,
+      required: true,
+    },
+    user: {
+      type: Object,
+      required: true,
+    },
   },
+
   data() {
     return {
       internalDialog: this.modelValue,
-      user: {
-        name: '',
-        phone: '',
-        address: '',
-      },
       quantity: 1,
-      
-      totalPrice: 0,
-      acceptTerms: false,
+      shippingCharge: 50,
+      userData: {
+        name: this.user.name || '',
+        phone: this.user.phone || '',
+        address: this.user.address || '',
+      },
       snackbar: {
         show: false,
         message: '',
         color: '',
       },
+      acceptTerms: false,
+      isFormValid: false,
+      rules: {
+        required: (v) => !!v || 'This field is required',
+        phone: (v) => /^\d{10}$/.test(v) || 'Phone number must be 10 digits',
+      },
     };
   },
+
+  computed: {
+    totalPrice() {
+      const price = this.book.bookPrice || this.book.price || 0;
+      return price * this.quantity + this.shippingCharge;
+    },
+    expectedDeliveryDate() {
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      return date.toLocaleDateString('en-GB');
+    },
+    canPlaceOrder() {
+      return this.isFormValid && this.acceptTerms;
+    },
+  },
+
   watch: {
     modelValue(val) {
       this.internalDialog = val;
-      if (val && this.bookId) {
-        this.fetchOrderDetails();
-      }
     },
     internalDialog(val) {
       this.$emit('update:modelValue', val);
     },
   },
-  computed: {
-    ...mapGetters('user', ['orderDetails']),
-    canPlaceOrder() {
-      return (
-        this.user.name &&
-        this.user.phone &&
-        this.user.address &&
-        this.quantity >= 1 &&
-        this.acceptTerms
-      );
-    },
-  },
-
-
 
   methods: {
-  
-async fetchOrderDetails() {
-  try {
-    const details = await this.$store.dispatch('user/fetchOrderDetails', this.bookId);
-    console.log('Fetched Order Details:', details);
-    this.orderDetails = {
-      bookName: details.bookName || '',
-      bookPrice: details.bookPrice || 0,
-      shippingCharge: details.shippingCharge ?? 50,
-      totalPrice: details.totalPrice || 0,
-      expectedDeliveryDate: details.expectedDeliveryDate || '',
-      paymentMode: details.paymentMode || 'Cash on Delivery',
-    };
-
-    this.totalPrice = this.orderDetails.totalPrice;
-    this.expectedDelivery = this.orderDetails.expectedDeliveryDate;
-  } catch (error) {
-    console.error('Error fetching order details:', error);
-  }
-},
-
-
     updateTotalPrice() {
-      const price = this.orderDetails.bookPrice || 0;
-      const shipping = this.orderDetails.shippingCharge || 0;
-      this.totalPrice = this.quantity * price + shipping;
+      // Handled by computed property
     },
 
     async placeOrder() {
+      const isValid = await this.$refs.form.validate();
+      if (!isValid) return;
+
       try {
         const loginDetails = JSON.parse(sessionStorage.getItem('loginDetails'));
         const payload = {
           userid: loginDetails.id,
-          bookId: this.bookId,
+          bookId: this.book.bookId,
           quantity: this.quantity,
-          name: this.user.name,
-          phone: this.user.phone,
-          address: this.user.address,
+          name: this.userData.name,
+          phone: this.userData.phone,
+          address: this.userData.address,
         };
-        console.log('payload :',payload);
-        
+
+        console.log('Payload:', payload);
         await this.$store.dispatch('user/buyNow', payload);
         this.showSnackbar('Order placed successfully', 'success');
         this.internalDialog = false;
+
+            // 🔄 Refresh the page
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000); 
+    
       } catch (error) {
         this.showSnackbar('Failed to place order', 'error');
+        console.error(error);
       }
     },
 

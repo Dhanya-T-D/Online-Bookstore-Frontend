@@ -270,7 +270,7 @@ async removeFromCart({ commit, rootState }, { bookId, userid }) {
 // place order
   async buyNow({ commit, rootState }, payload) {
     try {
-      const response = await axios.post(`${rootState.base_url}api/orders/buy-now`, null, {
+      const response = await axios.post(`${rootState.base_url}/api/orders/buy-now`, null, {
         params: {
           userid: payload.userid,
           bookId: payload.bookId,
@@ -292,7 +292,7 @@ async removeFromCart({ commit, rootState }, { bookId, userid }) {
 
  async fetchOrderDetails({ commit, rootState }, bookId) {
   try {
-    const response = await axios.get(`${rootState.base_url}api/orders/display/orderDetails`, {
+    const response = await axios.get(`${rootState.base_url}/api/orders/display/orderDetails`, {
       params: { bookId }
     });
 

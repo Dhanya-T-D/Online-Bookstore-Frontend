@@ -424,8 +424,10 @@ export default {
 
     // buy dialog
     buyNow(book) {
-      this.selectedBookForBuyNow = book;
-      this.buyNowDialog = true;
+      console.log("Book passed to BuyNowDialog:", book);
+  console.log("Book ID:", book.bookId); 
+  this.selectedBookForBuyNow = book;
+  this.buyNowDialog = true;
     },
 
     async handleBuyNowConfirm(payload) {
