@@ -9,6 +9,9 @@ export default{
       cartItems: state => state.cartItems,
       cartTotal: state => state.cartItems.reduce((total, item) => total + (item.price * item.quantity), 0),
       cartItemCount: state => state.cartItems.length,
+
+      orders: (state) => state.orders,
+      orderDetails: state => state.orderDetails,
       
 
 }

@@ -43,6 +43,17 @@ export default {
         state.cartItems = state.cartItems.filter(item => item.bookId !== bookId);
       },
     
+      // place order
+
+        ADD_ORDER(state, order) {
+          state.orders.push(order);
+        },
+
+        // order details
+
+            SET_ORDER_DETAILS(state, details) {
+            state.orderDetails = details;
+          },
 
 
 

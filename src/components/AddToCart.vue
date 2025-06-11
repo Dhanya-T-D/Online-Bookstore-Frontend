@@ -25,49 +25,7 @@
               :key="item.bookId"
               class="cart-item"
             >
-              <!-- <div class="cart-content">
-                
-                <div class="book-title">{{ item.bookName }}</div>
-
-               
-                <div class="middle-row">
-               
-                  <div class="image-container">
-                    <v-img
-                      v-if="item.coverImage"
-                      :src="'data:image/jpeg;base64,' + item.coverImage"
-                      height="70"
-                      width="50"
-                      contain
-                    />
-                    <v-icon v-else size="48">mdi-book</v-icon>
-                  </div>
-
-                
-                  <div class="price-buy">
-                    <div class="price-text">₹{{ item.price }} | Qty: {{ item.quantity }}</div>
-                  </div>
-                </div>
-
-               
-                <div class="action-buttons">
-                  <v-btn icon small variant="text" @click="decrementQuantity(item)">
-                    <v-icon>mdi-minus</v-icon>
-                  </v-btn>
-                  <v-btn icon small variant="text" @click="incrementQuantity(item)">
-                    <v-icon>mdi-plus</v-icon>
-                  </v-btn>
-                  <v-btn icon small variant="text" @click="removeFromCart(item)">
-                    <v-icon color="error">mdi-delete</v-icon>
-                  </v-btn>
-                </div>
-
-              
-                <div class="buy-now-btn">
-                 
-                  
-                </div>
-              </div> -->
+             
 
 <div class="item-div">
 
@@ -107,7 +65,7 @@
 
 
 <div class="buy-button">
-  <v-btn  class="buy-btn"  color="primary" size="small">Buy Now</v-btn>
+  <v-btn  class="buy-btn"  color="primary" size="small"  @click="openBuyNow(item)">Buy Now</v-btn>
 </div>
 
 </div>
@@ -255,7 +213,11 @@ export default {
       this.snackbar.message = message;
       this.snackbar.color = color;
       this.snackbar.show = true;
-    }
+    },
+
+    openBuyNow(item) {
+  this.$emit('buy-now', item);
+}
   }
 }
 </script>

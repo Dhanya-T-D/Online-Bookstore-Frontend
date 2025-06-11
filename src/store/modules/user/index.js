@@ -12,6 +12,8 @@ export default {
             language: JSON.parse(sessionStorage.getItem('language')) || [],
             bookList: JSON.parse(sessionStorage.getItem('bookList')) || [],
             cartItems: [],
+            orders: [],
+             orderDetails: {},
       
            
         };

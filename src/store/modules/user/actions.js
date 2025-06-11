@@ -3,6 +3,7 @@ import { ADD_TO_CART } from './mutations'
 import { SET_CART_ITEMS } from './mutations'
 import { UPDATE_CART_QUANTITY } from './mutations'
 
+
 export default {
 
       // user registration
@@ -249,23 +250,62 @@ async updateCartQuantity({ commit, rootState }, { bookId, userid, quantity }) {
     throw error;
   }
 },
-
-async removeFromCart({ commit }, { bookId, userid }) {
+async removeFromCart({ commit, rootState }, { bookId, userid }) {
   try {
-    const response = await axios.delete(`http://localhost:8448/api/cart/removeItem`, {
+    const response = await axios.delete(`${rootState.base_url}api/cart/removeItem`, {
       params: {
         bookId,
         userid
       }
     });
 
-    // If your backend responds with success, update Vuex store
-    commit('REMOVE_FROM_CART', bookId); // make sure this mutation exists
+    commit('REMOVE_FROM_CART', bookId);
     return response.data;
   } catch (error) {
     console.error('Error removing from cart:', error);
     throw error;
   }
+},
+
+// place order
+  async buyNow({ commit, rootState }, payload) {
+    try {
+      const response = await axios.post(`${rootState.base_url}api/orders/buy-now`, null, {
+        params: {
+          userid: payload.userid,
+          bookId: payload.bookId,
+          quantity: payload.quantity,
+          name: payload.name,
+          phone: payload.phone,
+          address: payload.address
+        }
+      });
+      commit('ADD_ORDER', response.data); // Optional mutation
+      return response.data;
+    } catch (error) {
+      console.error("Buy Now error:", error);
+      throw error;
+    }
+  },
+
+  // display order details
+
+ async fetchOrderDetails({ commit, rootState }, bookId) {
+  try {
+    const response = await axios.get(`${rootState.base_url}api/orders/display/orderDetails`, {
+      params: { bookId }
+    });
+
+    const orderDetail = response.data; 
+    commit('SET_ORDER_DETAILS', orderDetail); 
+    return orderDetail; 
+  } catch (error) {
+    console.error('Failed to fetch order details:', error);
+    throw error;
+  }
 }
+
+
+
     
 }

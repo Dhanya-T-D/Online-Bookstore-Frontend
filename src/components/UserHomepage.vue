@@ -58,7 +58,7 @@
 
         <!-- <add-to-cart ref="cart" v-model="showCartDialog" /> -->
         <div class="d-flex align-center">
-          <add-to-cart ref="cart" v-model="showCartDialog" class="mr-2" />
+          <add-to-cart ref="cart" @buy-now="handleBuyNowClick" class="mr-2" />
 
         <v-menu>
           <template v-slot:activator="{ props }">
@@ -123,8 +123,8 @@
         </v-card-subtitle>
 
         <v-card-actions>
-          <v-btn color="primary" @click="addToCart(book)" prepend-icon="mdi-cart">Add to Cart</v-btn>
-          <v-btn color="success" @click="buyNow(book)">Buy Now</v-btn>
+          <v-btn color="primary" @click.stop="addToCart(book)" prepend-icon="mdi-cart">Add to Cart</v-btn>
+          <v-btn color="success" @click.stop="buyNow(book)">Buy Now</v-btn>
         </v-card-actions>
       </v-card>
     </div>
@@ -160,40 +160,15 @@
       </v-card>
     </v-dialog>
 
+    <!-- <AddToCart @buy-now="handleBuyNowClick" /> -->
 
-
-<!-- Cart Items Display -->
-<!-- <v-dialog v-model="showCartDialog" max-width="600px">
-  <v-card>
-    <v-card-title class="text-h6">Shopping Cart</v-card-title>
-    <v-card-text>
-      <v-list>
-        <v-list-item v-for="item in cartItems" :key="item.bookId">
-          <v-list-item-content>
-            <v-list-item-title>{{ item.bookName }}</v-list-item-title>
-            <v-list-item-subtitle>
-              Price: ₹{{ item.price }} | Quantity: {{ item.quantity }}
-            </v-list-item-subtitle>
-          </v-list-item-content>
-          <v-list-item-action>
-            <v-chip>Total: ₹{{ item.price * item.quantity }}</v-chip>
-          </v-list-item-action>
-        </v-list-item>
-      </v-list>
-      <v-divider class="my-3"></v-divider>
-      <div class="d-flex justify-end">
-        <v-chip color="primary" class="text-h6">
-          Grand Total: ₹{{ calculateTotal }}
-        </v-chip>
-      </div>
-    </v-card-text>
-    <v-card-actions>
-      <v-spacer></v-spacer>
-      <v-btn color="error" @click="showCartDialog = false">Close</v-btn>
-      <v-btn color="success" @click="proceedToCheckout">Checkout</v-btn>
-    </v-card-actions>
-  </v-card>
-</v-dialog> -->
+<!-- Add BuyNowDialog Component Here -->
+<BuyNowDialog
+  v-model="buyNowDialog"
+  :book="selectedBookForBuyNow"
+  :user="profile"
+  @confirm="handleBuyNowConfirm"
+/>
 
   </v-container>
 </template>
@@ -202,11 +177,13 @@
 import { mapGetters } from 'vuex';
 import _ from "lodash";
 import AddToCart from './AddToCart.vue';
+import BuyNowDialog from './BuyNowDialog.vue';
 
 
 export default {
   components: {
-    AddToCart
+    AddToCart,
+    BuyNowDialog
   },
   data() {
  
@@ -227,9 +204,11 @@ export default {
       selectedBook: {},
       showCartDialog: false,
 
-      //  display cart items
-      // cartItems: [],
-      // showCartDialog: false,
+      // buy dialog box
+
+      buyNowDialog: false,
+      selectedBookForBuyNow: {},
+      
     };
   },
 
@@ -443,11 +422,28 @@ export default {
         }
     },
 
-    //  display cart items
-    // proceedToCheckout() {
-    // Implement checkout logic here
-    // console.log('Proceeding to checkout with items:', this.cartItems)
-  // }
+    // buy dialog
+    buyNow(book) {
+      this.selectedBookForBuyNow = book;
+      this.buyNowDialog = true;
+    },
+
+    async handleBuyNowConfirm(payload) {
+      try {
+        await this.$store.dispatch('user/placeOrder', payload);
+        this.buyNowDialog = false;
+        this.$refs.cart.showSnackbar('Order placed successfully!');
+      } catch (error) {
+        console.error('Failed to place order:', error);
+      }
+    },
+    handleBuyNowClick(book) {
+    this.selectedBookForBuyNow = book;
+    this.buyNowDialog = true;
+  },
+  
+
+
   },
 
   watch: {
