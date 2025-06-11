@@ -121,11 +121,12 @@
       <v-card-subtitle>
       <p>Author : {{book.author}}</p> 
         <p>Price : ₹{{book.price}}</p>
-        <p>Available Copies : {{book.availableCopies}}</p>
-        <!-- <p>Category : {{book.category}}</p> 
-        <p>Language : {{book.language}}</p>
-        <p>Edition : {{book.edition}}</p>
-        <p>Published Date : {{book.publishedDate}}</p> -->
+      <p>
+      Available Copies :
+      <span v-if="book.availableCopies > 0">{{ book.availableCopies }}</span>
+      <span v-else class="text-error font-weight-bold">Sold Out</span>
+    </p>
+        
       
       </v-card-subtitle>
 
