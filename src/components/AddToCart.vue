@@ -144,6 +144,7 @@ export default {
         if (response) {
           this.cartItems = response;
         }
+
       } catch (error) {
         console.error('Error loading cart items:', error);
         this.showSnackbar('Failed to load cart items', 'error');
@@ -164,6 +165,8 @@ export default {
 
         this.cartItems = this.cartItems.filter(i => i.bookId !== item.bookId);
         this.showSnackbar('Item removed from cart');
+            // 🔄 Refresh the page
+
       } catch (error) {
         this.showSnackbar('Error removing item from cart');
         console.error('Error:', error);

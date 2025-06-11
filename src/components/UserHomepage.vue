@@ -119,12 +119,30 @@
         <v-card-subtitle>
           <p>Author : {{book.author}}</p>
           <p>Price : ₹{{book.price}}</p>
-          <p>Available Copies : {{book.availableCopies}}</p>
+          <p>
+            Available Copies :
+            <span v-if="book.availableCopies > 0">{{ book.availableCopies }}</span>
+            <span v-else class="text-red">Sold Out</span>
+          </p>
+
         </v-card-subtitle>
 
         <v-card-actions>
-          <v-btn color="primary" @click.stop="addToCart(book)" prepend-icon="mdi-cart">Add to Cart</v-btn>
-          <v-btn color="success" @click.stop="buyNow(book)">Buy Now</v-btn>
+            <v-btn
+              color="primary"
+              :disabled="book.availableCopies < 1"
+              @click.stop="addToCart(book)"
+              prepend-icon="mdi-cart"
+            >
+              Add to Cart
+            </v-btn>
+          <v-btn
+            color="success"
+            :disabled="book.availableCopies < 1"
+            @click.stop="buyNow(book)"
+          >
+            Buy Now
+          </v-btn>
         </v-card-actions>
       </v-card>
     </div>
@@ -150,7 +168,10 @@
             {{ new Date(selectedBook.publishedDate).toLocaleDateString('en-GB') }}
           </p>
           <p><strong>Edition:</strong> {{ selectedBook.edition }}</p>
-          <p><strong>Available Copies:</strong> {{ selectedBook.availableCopies }}</p>
+          <p><strong>Available Copies:</strong>
+            <span v-if="selectedBook.availableCopies > 0">{{ selectedBook.availableCopies }}</span>
+            <span v-else class="text-red">Sold Out</span>
+          </p>
           <p><strong>Price:</strong> ₹{{ selectedBook.price }}</p>
         </v-card-text>
         <v-card-actions>
@@ -416,6 +437,10 @@ export default {
                 coverImage: book.coverImage
             });
             this.$refs.cart.showSnackbar('Book added to cart successfully');
+              // 🔄 Refresh the page
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
         } catch (error) {
             console.error('Error adding to cart:', error);
             this.$refs.cart.showSnackbar('Failed to add book to cart', 'error');
@@ -529,5 +554,10 @@ export default {
 .bookcard {
   width: 270px;
   margin-top: 20px;
+}
+
+.text-red {
+  color: #B71C1C !important;
+  font-weight: bold;
 }
 </style>

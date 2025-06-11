@@ -29,9 +29,9 @@
             label="Quantity"
             v-model.number="quantity"
             type="number"
-            min="1"
+            :min="1"
             @input="updateTotalPrice"
-            :rules="[rules.required]"
+            :rules="[rules.required, dynamicQuantityRule]"
             required
           />
 
@@ -40,6 +40,7 @@
           <div><strong>Book Name:</strong> {{ book.bookName }}</div>
           <div><strong>Book Price (each):</strong> ₹{{ book.bookPrice || book.price || 0 }}</div>
           <div><strong>Selected Quantity:</strong> {{ quantity }}</div>
+          <div><strong>Available Copies:</strong> {{ book.availableCopies }}</div>
           <div><strong>Shipping Charge:</strong> ₹{{ shippingCharge }}</div>
           <div><strong>Total Price:</strong> ₹{{ totalPrice }}</div>
           <div><strong>Expected Delivery:</strong> {{ expectedDeliveryDate }}</div>
@@ -70,7 +71,6 @@
       </v-card-actions>
     </v-card>
 
-    <!-- Snackbar -->
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="3000">
       {{ snackbar.message }}
     </v-snackbar>
@@ -128,7 +128,15 @@ export default {
       return date.toLocaleDateString('en-GB');
     },
     canPlaceOrder() {
-      return this.isFormValid && this.acceptTerms;
+      return this.isFormValid && this.acceptTerms && this.quantity <= (this.book.availableCopies || 0);
+    },
+
+    // ✅ Dynamic validator based on current availableCopies
+    dynamicQuantityRule() {
+      return (v) => {
+        const max = this.book?.availableCopies || 0;
+        return v > 0 && v <= max || `Only ${max} copies available`;
+      };
     },
   },
 
@@ -143,12 +151,17 @@ export default {
 
   methods: {
     updateTotalPrice() {
-      // Handled by computed property
+      // Computed handles pricing
     },
 
     async placeOrder() {
       const isValid = await this.$refs.form.validate();
       if (!isValid) return;
+
+      if (this.quantity > this.book.availableCopies) {
+        this.showSnackbar(`Only ${this.book.availableCopies} copies are available`, 'error');
+        return;
+      }
 
       try {
         const loginDetails = JSON.parse(sessionStorage.getItem('loginDetails'));
@@ -166,11 +179,9 @@ export default {
         this.showSnackbar('Order placed successfully', 'success');
         this.internalDialog = false;
 
-            // 🔄 Refresh the page
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000); 
-    
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
       } catch (error) {
         this.showSnackbar('Failed to place order', 'error');
         console.error(error);
